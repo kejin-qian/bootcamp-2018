@@ -622,6 +622,79 @@ report_stat(gapminder,'lifeExp','Asia')</code></pre>
 ## Max Life Expectancy: 82.603 
 ## Min Life Expectancy: 28.801</code></pre>
 </div>
+<div id="day2-exercise" class="section level2">
+<h2>Day2 Exercise</h2>
+</div>
+<div id="if-statement" class="section level2">
+<h2>IF Statement</h2>
+<pre class="r"><code>yrs = unique(gapminder$year)
+#try year 2002
+if (any(yrs == 2002)) {print(&quot;There is information of year 2002&quot;)} else {
+  print(&quot;Sorry, no information for year 2002&quot;)}</code></pre>
+<pre><code>## [1] &quot;There is information of year 2002&quot;</code></pre>
+<pre class="r"><code>#try year 2012
+if (any(yrs == 2012)) {print(&quot;There is information of year 2002&quot;)} else {
+  print(&quot;Sorry, no information for year 2002&quot;)}</code></pre>
+<pre><code>## [1] &quot;Sorry, no information for year 2002&quot;</code></pre>
+</div>
+<div id="loop-and-if-statement" class="section level2">
+<h2>LOOP AND IF STATEMENT</h2>
+<pre class="r"><code>#Write a script that finds the mean life expectancy by country for countries whose #population is below the mean for the dataset
+mean_pop = mean(gapminder$pop)
+df = gapminder[['lifeExp']][gapminder$pop &gt; mean_pop]
+mean(df)</code></pre>
+<pre><code>## [1] 63.38871</code></pre>
+<pre class="r"><code>#Write a script that loops through the gapminder data by continent and prints out #whether the mean life expectancy is smaller than 50, between 50 and 70, or greater #than 70.
+cont = unique(gapminder$continent)
+for (i in cont) {mean_le = round(mean(gapminder[['lifeExp']][gapminder$continent == i]),2)
+print(paste(&quot;The mean life expectancy in&quot;, i, &quot;is&quot;, mean_le)) 
+if (mean_le &lt; 50) {print(&quot;Mean life expectancy is smaller than 50&quot;)} else if (mean_le &gt; 70) {print(&quot;Mean life expectancy is larger than 70&quot;)} else {print(&quot;Mean life expectancy is between 50 and 70&quot;)}}</code></pre>
+<pre><code>## [1] &quot;The mean life expectancy in Asia is 60.06&quot;
+## [1] &quot;Mean life expectancy is between 50 and 70&quot;
+## [1] &quot;The mean life expectancy in Europe is 71.9&quot;
+## [1] &quot;Mean life expectancy is larger than 70&quot;
+## [1] &quot;The mean life expectancy in Africa is 48.87&quot;
+## [1] &quot;Mean life expectancy is smaller than 50&quot;
+## [1] &quot;The mean life expectancy in Americas is 64.66&quot;
+## [1] &quot;Mean life expectancy is between 50 and 70&quot;
+## [1] &quot;The mean life expectancy in Oceania is 74.33&quot;
+## [1] &quot;Mean life expectancy is larger than 70&quot;</code></pre>
+</div>
+<div id="write-functions-1" class="section level2">
+<h2>Write Functions</h2>
+<pre class="r"><code>#Create a function that given a data frame will print the name of each column and the class of data it contains. Use the gapminder dataset. Hint: Use mode() or class() to get the class of the data in each column. Remember that names() or colnames() returns the name of the columns in a dataset.
+dataset_summary &lt;-
+  function(df){
+    colname = names(df)
+    print(colname)
+    for (i in df){print(class(i))}
+  }
+dataset_summary(gapminder)</code></pre>
+<pre><code>##  [1] &quot;country&quot;     &quot;year&quot;        &quot;pop&quot;         &quot;continent&quot;   &quot;lifeExp&quot;    
+##  [6] &quot;gdpPercap&quot;   &quot;gdp&quot;         &quot;logGdp&quot;      &quot;logPop&quot;      &quot;vec_log_gdp&quot;
+## [1] &quot;character&quot;
+## [1] &quot;integer&quot;
+## [1] &quot;numeric&quot;
+## [1] &quot;character&quot;
+## [1] &quot;numeric&quot;
+## [1] &quot;numeric&quot;
+## [1] &quot;numeric&quot;
+## [1] &quot;numeric&quot;
+## [1] &quot;numeric&quot;
+## [1] &quot;numeric&quot;</code></pre>
+<pre class="r"><code>#Create a function that given a vector will print the mean and the standard deviation of a vector, it will optionally also print the median. Hint: include an argument that takes a boolean (TRUE/FALSE) operator and then include an if statement.
+mean_sd_median &lt;-
+  function(vec,med = FALSE)
+  {
+    print(paste(&quot;mean is&quot;, mean(vec))) 
+    print(paste(&quot;sd is&quot;, sd(vec)))
+    if (med == TRUE) 
+      {print(paste(&quot;median is&quot;, median(vec)))}}
+mean_sd_median(gapminder$pop, TRUE)</code></pre>
+<pre><code>## [1] &quot;mean is 29601212.3251174&quot;
+## [1] &quot;sd is 106157896.746828&quot;
+## [1] &quot;median is 7023595.5&quot;</code></pre>
+</div>
 
 
 

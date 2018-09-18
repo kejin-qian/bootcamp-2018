@@ -194,3 +194,55 @@ function(df, variable, continent) {
 report_stat(gapminder,'lifeExp','Asia')
 ```
 
+## Day2 Exercise
+## IF Statement
+```{r}
+yrs = unique(gapminder$year)
+#try year 2002
+if (any(yrs == 2002)) {print("There is information of year 2002")} else {
+  print("Sorry, no information for year 2002")}
+#try year 2012
+if (any(yrs == 2012)) {print("There is information of year 2002")} else {
+  print("Sorry, no information for year 2002")}
+```
+
+## LOOP AND IF STATEMENT
+```{r}
+#Write a script that finds the mean life expectancy by country for countries whose #population is below the mean for the dataset
+mean_pop = mean(gapminder$pop)
+df = gapminder[['lifeExp']][gapminder$pop > mean_pop]
+mean(df)
+```
+
+```{r}
+#Write a script that loops through the gapminder data by continent and prints out #whether the mean life expectancy is smaller than 50, between 50 and 70, or greater #than 70.
+cont = unique(gapminder$continent)
+for (i in cont) {mean_le = round(mean(gapminder[['lifeExp']][gapminder$continent == i]),2)
+print(paste("The mean life expectancy in", i, "is", mean_le)) 
+if (mean_le < 50) {print("Mean life expectancy is smaller than 50")} else if (mean_le > 70) {print("Mean life expectancy is larger than 70")} else {print("Mean life expectancy is between 50 and 70")}}
+```
+
+## Write Functions
+```{r}
+#Create a function that given a data frame will print the name of each column and the class of data it contains. Use the gapminder dataset. Hint: Use mode() or class() to get the class of the data in each column. Remember that names() or colnames() returns the name of the columns in a dataset.
+dataset_summary <-
+  function(df){
+    colname = names(df)
+    print(colname)
+    for (i in df){print(class(i))}
+  }
+dataset_summary(gapminder)
+```
+
+```{r}
+#Create a function that given a vector will print the mean and the standard deviation of a vector, it will optionally also print the median. Hint: include an argument that takes a boolean (TRUE/FALSE) operator and then include an if statement.
+mean_sd_median <-
+  function(vec,med = FALSE)
+  {
+    print(paste("mean is", mean(vec))) 
+    print(paste("sd is", sd(vec)))
+    if (med == TRUE) 
+      {print(paste("median is", median(vec)))}}
+mean_sd_median(gapminder$pop, TRUE)
+```
+
