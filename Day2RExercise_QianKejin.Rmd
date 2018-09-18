@@ -246,3 +246,45 @@ mean_sd_median <-
 mean_sd_median(gapminder$pop, TRUE)
 ```
 
+## Relationship
+```{r}
+yr = unique(gapminder$year)
+viz_lm <-
+  function(df, dv, iv, year) {
+    dat <- df[df[["year"]] == year, ]
+    y <- log(dat[[dv]])
+    x <- log(dat[[iv]])
+    fit <- lm(y ~ x)
+    plot(y ~ x, main = year,
+         xlab = iv, ylab = dv)
+    lines(x, predict(fit), col = 'blue')
+  }
+for (i in yr) {
+  viz_lm(gapminder, "lifeExp", "gdpPercap", i)}
+```
+##Relationship ex
+```{r}
+n = 1 : nrow(gapminder)
+for (i in n) {
+if (gapminder[i,'country'] == 'Canada'| gapminder[i,'country'] == 'United States'| gapminder[i,'country'] == 'Mexico'){gapminder[i,'continent_new'] = 'North America'} else if (gapminder[i,'continent'] == "Americas"){gapminder[i,'continent_new'] = 'South America'} else {gapminder[i,'continent_new'] = gapminder[i,'continent']}}
+
+```
+## CONTINUE
+```{r}
+
+ctnew = unique(gapminder$continent_new)
+viz_lm <-
+  function(df, dv, iv, continent) {
+    dat <- df[df[["continent_new"]] == continent, ]
+    y <- log(dat[[dv]])
+    x <- log(dat[[iv]])
+    fit <- lm(y ~ x)
+    plot(y ~ x, main = continent,
+         xlab = iv, ylab = dv)
+    lines(x, predict(fit), col = 'blue')
+  }
+for (i in ctnew) {
+  viz_lm(gapminder, "lifeExp", "gdpPercap", i)}
+```
+
+
