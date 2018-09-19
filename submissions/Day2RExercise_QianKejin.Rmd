@@ -1,0 +1,292 @@
+---
+title: "R day2"
+author: "Kejin Qian"
+date: "9/18/2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+here::here("data", "gapminder5.csv")
+
+gapminder <- read.csv(here::here("data","gapminder5.csv"))
+```
+
+
+##Converting factors to characters
+```{r}
+gapminder$country <- as.character(gapminder$country)
+gapminder$continent <- as.character(gapminder$continent)
+```
+
+## R for loop 
+```{r}
+#create a vector of values that you want to repeat the function for
+#this is the number of times you are going to loop with
+obs <- 1 : nrow(gapminder)
+#initialize the for loop with 'for (i in vector)'
+for (i in obs){#the function to repeat is enclosed in braces {}
+  gapminder[i, "gdp"] <- gapminder[i, 'pop']* gapminder[i,'gdpPercap']}
+```
+
+## Creating logged variables with a for loop
+```{r}
+#note you can put as many functions as you want in the same loop
+obs <- 1 : nrow(gapminder)
+for (i in obs){gapminder[i, 'logGdp'] <- log(gapminder[i, 'gdp'])
+gapminder[i, 'logPop']<- log(gapminder[i,'pop'])}
+```
+
+## A way to avoid loop
+```{r}
+gapminder$vec_log_gdp <- log(gapminder$gdp)
+all(gapminder$vec_log_gdp == gapminder$logGdp)
+```
+
+## Has life expectancy increased over year
+```{r}
+years <- unique(gapminder$year)
+for (i in years){
+  mean_le <- mean(gapminder$lifeExp[gapminder$year == i], na.rm = T)
+  print(paste0(i, ": ", mean_le))
+}
+```
+
+## Mean life expectancy by continent
+```{r}
+continent <- unique(gapminder$continent)
+for (i in continent){
+  mean_lifeep <- mean(gapminder$lifeExp[gapminder$continent == i],na.rm =T)
+  print(paste0(i, ": ", mean_lifeep))
+}
+```
+
+## Nested loop
+```{r}
+for (i in continent) {
+  print(paste0("Continent: ", i))
+  for (j in years) {
+    mean_le <- mean(gapminder$lifeExp[gapminder$continent == i & 
+                                          gapminder$year == j], 
+                      na.rm = T)
+    print(paste0(j, ": ", mean_le))
+  }
+}
+```
+
+## Nested Loop ex
+```{r}
+for (i in continent) {
+  print(paste0("Continent: ", i))
+  for (j in years) {
+    std_le <- sd(gapminder$lifeExp[gapminder$continent == i & gapminder$year == j],
+                 na.rm = T)
+    print(paste0(j, ": ", std_le))
+  }
+}
+```
+
+## Apply
+```{r}
+vars <- gapminder[,c('lifeExp','pop','gdpPercap')]
+apply(vars, 2, mean, na.rm =T)
+```
+
+## Compare Apply with for loop
+```{r}
+print(names(vars))
+#"lifeExp"   "pop"       "gdpPercap"
+for (i in vars) {print(mean(i))}
+#mean of each column
+```
+
+## The while loop
+```{r}
+i <- 1952
+while (i < 1987) {sd_le <- sd(gapminder$lifeExp[gapminder$year == i])
+    print(paste0(i, ": ", sd_le)
+    )
+    i <- i + 5
+    }
+```
+```{r}
+i <- 1987
+while (i < 2003) {sd_le <- sd(gapminder$lifeExp[gapminder$year == i])
+    print(paste0(i, ": ", sd_le)
+    )
+    i <- i + 5
+    }
+```
+
+## IF/ELSE Statement
+```{r}
+random_year <- sample(years, 1)
+if (random_year > 1980) {print(random_year)} else {
+  print('sorry, random year is less than 1980')}
+```
+
+## Put for and IF/ELSE together
+```{r}
+threshold <- 70
+
+for (i in unique(gapminder$continent)) {
+   tmp <- mean(gapminder$lifeExp[gapminder$continent==i])
+   
+   if (tmp < threshold) {
+       print(paste("Mean Life Expectancy in", i, "is less than", threshold))
+   } else {
+       print(paste("Mean Life Expectancy in", i, "is greater than", threshold))
+   }
+}
+```
+```{r}
+yr <- 1987
+for (i in years){
+  if (i >= 1987) {
+  tmp <- mean(gapminder$pop[gapminder$year == i])
+  print(paste("Mean population in", i, "is", tmp))
+  }else{print(paste("Error Message, the year is less than", yr))}
+  
+}
+```
+
+## Writing Functions
+```{r}
+get_values <-
+  function(df, variable = "continent") {
+    vals <- unique(df[[variable]])  
+    print(paste0(variable, ": ", vals))
+  }
+get_values(gapminder,'country')
+```
+
+## Write Functions
+```{r}
+report_mean_sd <- 
+function(df, variable, country) {
+    var <- df[[variable]][df$country == country]
+    m_le <- mean(var)
+    sd_le <- sd(var)
+    cat("Country:", country, 
+        "\nMean Life Expectancy:", m_le,
+        "\nSD Life Expectancy:", sd_le)
+  }
+
+report_mean_sd(gapminder, "lifeExp", "Bulgaria")
+```
+
+## Write Function Ex
+```{r}
+report_stat <-
+function(df, variable, continent) {
+  var <- df[[variable]][df$continent == continent]
+  max = max(var)
+  min = min(var)
+  me = mean(var)
+  mdm = median(var)
+  cat("Continent:", continent,
+      "\nMean Life Expectancy:", me, "\nMedium Life Expectancy:", mdm,
+      "\nMax Life Expectancy:", max, "\nMin Life Expectancy:", min)
+}
+report_stat(gapminder,'lifeExp','Asia')
+```
+
+## Day2 Exercise
+## IF Statement
+```{r}
+yrs = unique(gapminder$year)
+#try year 2002
+if (any(yrs == 2002)) {print("There is information of year 2002")} else {
+  print("Sorry, no information for year 2002")}
+#try year 2012
+if (any(yrs == 2012)) {print("There is information of year 2002")} else {
+  print("Sorry, no information for year 2002")}
+```
+
+## LOOP AND IF STATEMENT
+```{r}
+#Write a script that finds the mean life expectancy by country for countries whose #population is below the mean for the dataset
+mean_pop = mean(gapminder$pop)
+df = gapminder[['lifeExp']][gapminder$pop > mean_pop]
+mean(df)
+```
+
+```{r}
+#Write a script that loops through the gapminder data by continent and prints out #whether the mean life expectancy is smaller than 50, between 50 and 70, or greater #than 70.
+cont = unique(gapminder$continent)
+for (i in cont) {mean_le = round(mean(gapminder[['lifeExp']][gapminder$continent == i]),2)
+print(paste("The mean life expectancy in", i, "is", mean_le)) 
+if (mean_le < 50) {print("Mean life expectancy is smaller than 50")} else if (mean_le > 70) {print("Mean life expectancy is larger than 70")} else {print("Mean life expectancy is between 50 and 70")}}
+```
+
+## Write Functions
+```{r}
+#Create a function that given a data frame will print the name of each column and the class of data it contains. Use the gapminder dataset. Hint: Use mode() or class() to get the class of the data in each column. Remember that names() or colnames() returns the name of the columns in a dataset.
+dataset_summary <-
+  function(df){
+    colname = names(df)
+    print(colname)
+    for (i in df){print(class(i))}
+  }
+dataset_summary(gapminder)
+```
+
+```{r}
+#Create a function that given a vector will print the mean and the standard deviation of a vector, it will optionally also print the median. Hint: include an argument that takes a boolean (TRUE/FALSE) operator and then include an if statement.
+mean_sd_median <-
+  function(vec,med = FALSE)
+  {
+    print(paste("mean is", mean(vec))) 
+    print(paste("sd is", sd(vec)))
+    if (med == TRUE) 
+      {print(paste("median is", median(vec)))}}
+mean_sd_median(gapminder$pop, TRUE)
+```
+
+## Relationship
+```{r}
+yr = unique(gapminder$year)
+viz_lm <-
+  function(df, dv, iv, year) {
+    dat <- df[df[["year"]] == year, ]
+    y <- log(dat[[dv]])
+    x <- log(dat[[iv]])
+    fit <- lm(y ~ x)
+    plot(y ~ x, main = year,
+         xlab = iv, ylab = dv)
+    lines(x, predict(fit), col = 'blue')
+  }
+for (i in yr) {
+  viz_lm(gapminder, "lifeExp", "gdpPercap", i)}
+```
+##Relationship ex
+```{r}
+n = 1 : nrow(gapminder)
+for (i in n) {
+if (gapminder[i,'country'] == 'Canada'| gapminder[i,'country'] == 'United States'| gapminder[i,'country'] == 'Mexico'){gapminder[i,'continent_new'] = 'North America'} else if (gapminder[i,'continent'] == "Americas"){gapminder[i,'continent_new'] = 'South America'} else {gapminder[i,'continent_new'] = gapminder[i,'continent']}}
+
+```
+## CONTINUE
+```{r}
+
+ctnew = unique(gapminder$continent_new)
+viz_lm <-
+  function(df, dv, iv, continent) {
+    dat <- df[df[["continent_new"]] == continent, ]
+    y <- log(dat[[dv]])
+    x <- log(dat[[iv]])
+    fit <- lm(y ~ x)
+    plot(y ~ x, main = continent,
+         xlab = iv, ylab = dv)
+    lines(x, predict(fit), col = 'blue')
+  }
+for (i in ctnew) {
+  viz_lm(gapminder, "lifeExp", "gdpPercap", i)}
+```
+
+
