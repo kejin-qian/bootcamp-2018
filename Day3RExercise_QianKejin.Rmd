@@ -1,0 +1,178 @@
+---
+title: "Day 3 R"
+author: "Kejin Qian"
+date: "9/19/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)  #echo = TRUE -> in the markdown file, the code will show up... if you don't want people to see your code, set echo = FALSE
+```
+
+## Load Data 
+```{r}
+generation <- read.csv(here::here("data/generation.csv"), 
+                       stringsAsFactors = F)
+imports <- read.csv(here::here("data/imports.csv"), 
+                    stringsAsFactors = F)
+#note the stringsAsFactors = F, otherwise your strings will automatically set the strings as factors
+```
+
+## Explore Dataset
+```{r}
+str(generation)
+print(' ')
+str(imports)
+```
+
+## Dealing with date and time
+```{r}
+# the date and time will be treated as character variable automatically
+library(lubridate) #library to convert date and time
+generation$datetime <- as_datetime(generation$datetime)
+class(generation$datetime)
+head(generation$datetime)
+```
+
+```{r}
+imports$datetime <- as_datetime(imports$datetime)
+class(imports$datetime)
+head(imports$datetime)
+str(imports)
+```
+
+## Reshaping data
+```{r}
+head(generation)
+library(reshape2)
+long_gen <- melt(generation, id.vars = "datetime", 
+                 #Specify the variable that doesn???t melt with id.vars
+                 #if more than one variable need to be fixed, use id.var = c('a','b')
+                           variable.name = "source",
+                           value.name = "usage")
+head(long_gen)
+long_gen[order(long_gen$datetime)[1:20],]
+#now each row is one observation on a single source at a specific time
+```
+
+## Merging Data
+```{r}
+#To merge, need to choose the columns that have common values between the dataframes
+#Usually a variable with ids or years, or both
+#merge(x,y,by=c("","")) x= df1 y=df2 by:variables to match (must have common name)
+
+#if two datasets have different variable names, use by.x ='var name in x', by.y ='var name in y'
+#the complete statement: merge(x, y, by.x = "id", by.y = "cd", all.x = T, all.y = T)
+merged_data <- merge(generation, imports, by = "datetime")
+merged_data
+```
+
+## Reshape the merged data
+```{r}
+long_mer_data <- melt(merged_data, id.vars = 'datetime',variable.name = "source",
+                           value.name = "usage" )
+head(long_mer_data)
+```
+
+## dplyr
+```{r}
+# SELECT ---- select is used to select variables/columns
+#select by name:
+#select(gapminder, continent, pop)
+#select by position:
+#select(df, c(1, 3, 10))
+#select by range:
+#select(df, country:pop) or select(df, 1:3)
+#drop variables with -
+#select(df, -gdpPercap)
+library(dplyr)
+tmp_select <- select(merged_data, biogas, solar)
+tmp_del <- select(merged_data, -solar, -biogas)
+tmp_select
+tmp_del
+
+#select helper functions
+tmp_helper <- select(merged_data, contains('hydro'),starts_with('bio'))
+names(tmp_helper)
+```
+
+## dplyr - Filter
+```{r}
+lrg_imports <- filter(merged_data, imports > 7000)
+nrow(lrg_imports)
+head(lrg_imports)
+#you can also put multiple conditions in the same line
+filter_and <- filter(merged_data, imports > 7000, natural_gas < 7000)#AND in conditions
+nrow(filter_and)
+filter_or <- filter(merged_data, imports > 7000| natural_gas < 7000)#OR in conditions
+nrow(filter_or)
+```
+
+## dplyr - Mutate
+```{r}
+#mutate creates new variables
+mut_data <- mutate(long_mer_data, log_usage = log(usage))
+                   #put your new variable here
+head(mut_data)
+#you can do multiple too
+mut_data2 <- mutate(long_mer_data, log_usage = log(usage), usagesq = usage**2)
+head(mut_data2)
+            
+```
+
+## dplyr - summarize
+```{r}
+#it reduces observations into a single value based on functions
+#total energy consumption
+summarize(long_mer_data, total#give a name to the value you calculated
+          = sum(usage, na.rm = T))
+```
+
+## pipe %>%
+```{r}
+#it helps you to chain together functions
+#it sends the result of one function to another function
+long_mer_data %>% 
+  filter(source == "geothermal") %>% 
+  select(-datetime) %>% 
+  mutate(log_usage = log(usage)) %>% 
+  summarize(mean_log_usage = mean(log_usage, na.rm = T))
+```
+
+## pipe continue
+```{r}
+#While piping, the piped dataframe is not changed!
+#To refer to the manipulated dataframe, use . (dot) you need to refer to the implicit dataset you are currently changing on
+merged_data %>% 
+  select(-datetime) %>% 
+  mutate(total_usage = rowSums(., na.rm = T)) %>% 
+  #the rowSum function takes parameter df, and here we need the df with datetime removed, so the dot. is introduced here
+  summarize(total_usage = sum(total_usage, na.rm = T))
+```
+
+## pip ex
+```{r}
+  merged_data %>%
+  select(contains("hydro")) %>% #View()
+  mutate(total_hydro = rowSums(., na.rm = T)) %>%
+  summarize(mean_usage = mean(total_hydro, na.rm = T))
+```
+
+## Group by
+```{r}
+long_mer_data %>% 
+  group_by(source) %>%
+  summarize(sum_usage = sum(usage, na.rm = T),
+            mean_usage = mean(usage, na.rm = T))
+```
+
+## Exercise
+```{r}
+merged_data %>%
+  melt(id.vars = 'datetime', variable.name = "source", value.name = "usage") %>% 
+  filter(source == 'small_hydro'| source == 'large_hydro'| source == 'biogas'| source == 'biomass') %>% 
+  group_by(source) %>%
+  summarize(mean_usage = mean(usage, na.rm = T))
+
+```
+
